@@ -57,6 +57,14 @@ Provenance solves these problems by treating decisions as **first-class temporal
 
 ---
 
+<div align="center">
+  <p><strong>App Atmospheric Background Preview:</strong></p>
+  <video src="cherry.mp4" width="100%" style="max-width: 800px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);" controls muted autoplay loop></video>
+</div>
+<br />
+
+---
+
 ## System Architecture
 
 ### Diagram
