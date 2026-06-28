@@ -1,11 +1,14 @@
 <div align="center">
 
 # Provenance
+  
+<img src="banner.png" alt="Provenance Banner" width="100%" style="max-width: 800px; border-radius: 16px;" />
+<br />
 
-**Track every decision your team makes.**
+### Track every decision your team makes.
 
-Visualize, understand, and learn from team decisions using graph-first temporal memory.
-Never lose context again.
+Visualize, understand, and learn from team decisions using graph-first temporal memory.  
+*Never lose context again.*
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.6-black?logo=next.js)](https://nextjs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7.3-blue?logo=typescript)](https://www.typescriptlang.org)
@@ -14,30 +17,6 @@ Never lose context again.
 [![Gemini](https://img.shields.io/badge/Gemini-2.5%20Flash-green?logo=google)](https://ai.google.dev)
 
 </div>
-
----
-
-## Table of Contents
-
-1. [What is Provenance?](#what-is-provenance)
-2. [System Architecture](#system-architecture)
-3. [Complete Workflow](#complete-workflow)
-4. [AI Decision Extraction Pipeline](#ai-decision-extraction-pipeline)
-5. [HydraDB Data Model](#hydradb-data-model)
-6. [Graph Versioning](#graph-versioning)
-7. [Discord Import Workflow](#discord-import-workflow)
-8. [Semantic Search Workflow](#semantic-search-workflow)
-9. [Graph Visualization Workflow](#graph-visualization-workflow)
-10. [Timeline Workflow](#timeline-workflow)
-11. [Insights Workflow](#insights-workflow)
-12. [Authentication Workflow](#authentication-workflow)
-13. [Folder Structure](#folder-structure)
-14. [API Documentation](#api-documentation)
-15. [Environment Variables](#environment-variables)
-16. [Getting Started](#getting-started)
-17. [Technologies Used](#technologies-used)
-18. [Screenshots](#screenshots)
-19. [Future Scope](#future-scope)
 
 ---
 
@@ -53,6 +32,28 @@ HydraDB, and surfaces them through an interactive dashboard featuring:
 - **Timeline** — Chronologically trace every decision event in a project
 - **Insights** — AI-generated summaries of team decision patterns
 - **Graph Versioning** — Decisions are never overwritten; every revision is preserved
+
+---
+
+## The Problem & The Solution
+
+### The Problem: Knowledge Decay in Modern Software Teams
+In fast-moving engineering teams, decisions are made continuously across multiple channels—chat rooms (Discord, Slack), pull request threads, design docs, and sync meetings. Over time, this leads to:
+1. **Context Loss**: A decision is agreed upon in a chat thread, but six months later, nobody remembers *why* it was made.
+2. **Outdated Wikis**: Static documentation like Confluence or Notion pages quickly become stale and out-of-sync with active decisions.
+3. **Knowledge Fragmentation**: Key structural choices are buried under thousands of casual chat messages.
+4. **Tracking Gap**: Traditional databases overwrite old states, making it impossible to audit how a decision evolved over time.
+
+### The Solution: Graph-Native Temporal Decision Memory
+Provenance solves these problems by treating decisions as **first-class temporal graph entities**. 
+
+| Aspect | Traditional Documentation (Wikis/Chat logs) | Provenance (Graph-Native Temporal AI Memory) |
+| :--- | :--- | :--- |
+| **Extraction** | Manual entry required (high friction, often forgotten) | **Automated AI Extraction** (Gemini parses chats automatically) |
+| **Structure** | Flat files, unstructured text, or search-heavy chat history | **Typed Knowledge Graph** (Entities & typed relations in HydraDB) |
+| **History & Auditing** | Overwritten states (loss of history) or hard-to-trace wiki edits | **Temporal Versioning** (Every revision saved with timestamps & supersession links) |
+| **Searchability** | Keyword matching (returns irrelevant files/chats) | **Semantic Graph Search** (AI answers queries using actual graph subgraphs) |
+| **Traceability** | Isolated messages with no connection to who proposed what | **Explicit Relations** (`proposed`, `affects`, `superseded_by`, `surfaced_in`) |
 
 ---
 
@@ -94,6 +95,75 @@ HydraDB, and surfaces them through an interactive dashboard featuring:
                           +-------------|-------------+
                           |             |             |
                        Timeline     Insights       Search
+```
+
+### Architecture Flowchart (Mermaid)
+
+```mermaid
+graph TD
+    %% Styling
+    classDef frontend fill:#4F46E5,stroke:#312E81,stroke-width:2px,color:#fff;
+    classDef api fill:#10B981,stroke:#065F46,stroke-width:2px,color:#fff;
+    classDef storage fill:#8B5CF6,stroke:#4C1D95,stroke-width:2px,color:#fff;
+    classDef external fill:#F59E0B,stroke:#78350F,stroke-width:2px,color:#fff;
+
+    subgraph Frontend [Next.js Client-Side App Router / React 19]
+        UI[Dashboard / Landing Page UI]:::frontend
+        RC[Project & Auth Contexts]:::frontend
+        RF[React Flow Graph Canvas]:::frontend
+        TM[Timeline & Insights Feed]:::frontend
+    end
+
+    subgraph API_Layer [Next.js Route Handlers / api/*]
+        EP["/api/projects"]:::api
+        ED["/api/decisions"]:::api
+        EE["/api/extract"]:::api
+        ES["/api/search"]:::api
+        ET["/api/timeline"]:::api
+        EI["/api/insights"]:::api
+    end
+
+    subgraph External_Services [External APIs & Services]
+        Firebase[Firebase Auth - Google OAuth]:::external
+        Discord[Discord REST API v10]:::external
+        Gemini[Gemini 2.5 Flash LLM]:::external
+    end
+
+    subgraph Database [Storage Layer]
+        HydraDB[HydraDB Graph Engine <br> Temporal Triplet Store]:::storage
+        LocalCache[("local/discord-messages.json")]:::storage
+    end
+
+    %% Flow Connections
+    UI --> RC
+    UI --> RF
+    UI --> TM
+
+    RC --> Firebase
+    RC --> EP
+    
+    RF --> ES
+    RF --> ED
+    
+    TM --> ET
+    TM --> EI
+
+    %% API to External/Database
+    EP --> HydraDB
+    ED --> HydraDB
+    
+    EE --> Gemini
+    EE --> HydraDB
+    
+    ES --> HydraDB
+    ES --> Gemini
+    
+    ET --> HydraDB
+    EI --> HydraDB
+    EI --> Gemini
+
+    Discord --> LocalCache
+    LocalCache --> EE
 ```
 
 ### Component Explanations
@@ -154,6 +224,59 @@ User visits landing page
   |  Insights ---- AI-generated analytics   |
   +------------------------------------------+
 ```
+
+### Workflow Sequence Diagram (Mermaid)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant UI as Next.js UI
+    participant Auth as Firebase Auth
+    participant API as Next.js API Routes
+    participant Discord as Discord API
+    participant Gemini as Gemini 2.5 Flash
+    participant Hydra as HydraDB
+
+    User->>UI: Click "Sign In with Google"
+    UI->>Auth: Popup Sign-In Request
+    Auth-->>UI: Return ID Token & User Profile
+    UI->>UI: Update AuthContext & Redirect to Dashboard
+    
+    User->>UI: Enter Discord credentials & click "Import"
+    UI->>API: POST /api/projects/:id/connect (Guild ID, Bot Token)
+    API->>Discord: GET /guilds/:guildId/channels & GET /channels/:channelId/messages
+    Discord-->>API: Return channels & latest 50 messages
+    API->>API: Write & Merge into data/discord-messages.json
+    API-->>UI: Return imported message count
+    
+    User->>UI: Click "Extract Decisions"
+    UI->>API: POST /api/extract { messages, projectId }
+    loop For each message (with 2.5s delay)
+        API->>Gemini: Request Decision Classification & Extraction
+        Gemini-->>API: Return Structured JSON (isDecision, extractedDecision)
+        alt isDecision == true
+            API->>Hydra: Write Decision Node & Triplet Relations (proposed, affects, surfaced_in)
+            Hydra-->>API: Success
+        end
+    end
+    API-->>UI: Return execution summary
+    UI->>UI: Update ProjectContext and refresh views (Graph, Timeline)
+```
+
+### Workflow Details Matrix
+
+| Workflow | Trigger | Input Data | Core Components | Services / AI | UI Output |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Authentication** | Click "Sign In with Google" | User Google account credentials | [AuthContext.tsx](file:///d:/hydra/PROVENANCE/context/AuthContext.tsx), `components/auth` | Firebase Authentication | User profile, redirection to `/dashboard` |
+| **Project Setup** | Click "Create Project" | Project Name, Description | [route.ts](file:///d:/hydra/PROVENANCE/app/api/projects/route.ts), [ProjectContext.tsx](file:///d:/hydra/PROVENANCE/context/ProjectContext.tsx) | HydraDB (Project node) | Project card in list, redirect to project home |
+| **Discord Connection** | Save credentials on Connect tab | Bot Token, Guild ID, Channel ID/Name | `/connect` page, [discord.ts](file:///d:/hydra/PROVENANCE/lib/discord.ts) | Discord API v10 | Channel connection confirmation & sync status |
+| **Message Sync** | Click "Import Messages" | Connected channel metadata | [route.ts](file:///d:/hydra/PROVENANCE/app/api/discord/messages/route.ts) | Discord API v10, [discord-messages.json](file:///d:/hydra/PROVENANCE/data/discord-messages.json) | Preview list of imported message cards |
+| **Decision Extraction** | Click "Extract Decisions" | List of imported Discord messages | [route.ts](file:///d:/hydra/PROVENANCE/app/api/extract/route.ts), [discord.ts](file:///d:/hydra/PROVENANCE/lib/discord.ts) | Gemini 2.5 Flash, HydraDB | Extraction report, incremented project decision counts |
+| **Graph Visualization**| Open Graph tab | Project ID | [route.ts](file:///d:/hydra/PROVENANCE/app/api/graph/route.ts), `@xyflow/react` | HydraDB (Relations query) | Draggable & zoomable interactive node-edge graph |
+| **Semantic Search** | Submit natural-language question | Search query text | [route.ts](file:///d:/hydra/PROVENANCE/app/api/search/route.ts), [hydradb.ts](file:///d:/hydra/PROVENANCE/lib/hydradb.ts) | Gemini 2.5 Flash (Subgraph synthesis), HydraDB | AI answer card, highlighted graph nodes, timeline events |
+| **Timeline Reconstruct**| Open Timeline tab | Project ID | [route.ts](file:///d:/hydra/PROVENANCE/app/api/timeline/route.ts), [ProjectContext.tsx](file:///d:/hydra/PROVENANCE/context/ProjectContext.tsx) | HydraDB (Temporal queries) | Chronological feed with icons, diffs, and Discord previews |
+| **Insights & Analytics**| Open Insights tab | Project ID | [route.ts](file:///d:/hydra/PROVENANCE/app/api/insights/route.ts) | HydraDB, Gemini 2.5 Flash (Narrative synthesis) | Hard metrics cards, breakdown charts, AI summaries |
 
 **Step-by-step explanation:**
 
@@ -218,6 +341,42 @@ Classification:
          - Decision  --> affects     --> Project
          - Decision  --> superseded_by --> OldDecision  (if applicable)
          - Decision  --> surfaced_in --> Message
+```
+
+### Extraction Pipeline Flowchart (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef start_end fill:#F3F4F6,stroke:#9CA3AF,stroke-width:1px,color:#000;
+    classDef step fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px,color:#000;
+    classDef decision fill:#FFFBEB,stroke:#F59E0B,stroke-width:2px,color:#000;
+    classDef database fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px,color:#000;
+
+    Start([Discord Message Received]):::start_end --> BuildPrompt[Build Structured Gemini Prompt]:::step
+    BuildPrompt --> CallGemini[Call Gemini 2.5 Flash API]:::step
+    CallGemini --> Classify{"Is Message a Decision?"}:::decision
+    
+    Classify -- No --> Skip["Record as Non-Decision / Skipped"]:::step
+    Classify -- Yes --> Extract["Extract Fields: Topic, Decision, Reasoning, Confidence, replacesPrevious"]:::step
+    
+    Extract --> Supersession{"replacesPrevious == true?"}:::decision
+    Supersession -- Yes --> FindOld[Search active decisions with matching category]:::step
+    FindOld --> CreateSupersedes[Set superseded_by relation from old to new]:::step
+    CreateSupersedes --> SaveNode
+    
+    Supersession -- No --> SaveNode[Construct Decision Node & generate unique entityId]:::step
+    
+    SaveNode --> Ingest[Ingest Graph Triplets into HydraDB]:::database
+    
+    subgraph Ingested Triplets
+        T1[("Person -- proposed --> Decision")]
+        T2[("Decision -- affects --> Project")]
+        T3[("Decision -- surfaced_in --> Message")]
+        T4[("Decision -- superseded_by --> OldDecision")]
+    end
+    
+    Ingest --> T1 & T2 & T3 & T4
+    T1 & T2 & T3 & T4 --> End([Dashboard Refreshed]):::start_end
 ```
 
 ### Example Gemini JSON Response
@@ -415,6 +574,31 @@ Decision B  (status: active)
 Decision C  (status: active)  <-- current version
 ```
 
+### Graph Versioning & Supersession Chain (Mermaid)
+
+```mermaid
+flowchart LR
+    subgraph Decision_X_Timeline ["Logical Decision X (API Gateway Choice)"]
+        v1["decision-X-1719560000000<br>(v1: Considered Nginx)<br>Status: active"]
+        v2["decision-X-1719563600000<br>(v2: Chose Kong Gateway)<br>Status: active"]
+        
+        v1 -- "updated to (Same logical ID, newer timestamp)" --> v2
+    end
+
+    subgraph Decision_Y_Timeline ["Logical Decision Y (Gateway Revision)"]
+        v3["decision-Y-1719570000000<br>(v3: Migrated to APISix)<br>Status: active"]
+    end
+
+    v2 -- "superseded_by (Relation edge)" --> v3
+    
+    %% Styling
+    classDef old fill:#F3F4F6,stroke:#D1D5DB,stroke-width:1px,color:#9CA3AF;
+    classDef current fill:#ECFDF5,stroke:#10B981,stroke-width:2px,color:#065F46;
+    class v1 old;
+    class v2 old;
+    class v3 current;
+```
+
 ### Why Previous Versions Are Never Overwritten
 
 Provenance treats **decisions as immutable events**. When a new decision replaces an older one:
@@ -474,6 +658,38 @@ Discord Server  (guild)
   Dashboard decision count updates
 ```
 
+### Ingestion Flowchart (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef start_end fill:#F3F4F6,stroke:#9CA3AF,stroke-width:1px;
+    classDef step fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px;
+    classDef ext fill:#F59E0B,stroke:#78350F,stroke-width:1.5px;
+    classDef database fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px;
+
+    Start([Start Discord Import]):::start_end --> Connect["User Enters Bot Token & Guild ID"]:::step
+    Connect --> Resolve{"Is Channel Name or ID provided?"}:::step
+    
+    Resolve -- Name --> FetchChannels[List Guild Channels via Discord API]:::ext
+    FetchChannels --> MatchID[Resolve name to snowflake channel ID]:::step
+    
+    Resolve -- ID --> FetchMsgs["Fetch latest 50 messages via GET /channels/channelId/messages"]:::ext
+    MatchID --> FetchMsgs
+    
+    FetchMsgs --> Normalize[Normalize messages metadata to DiscordMessage]:::step
+    Normalize --> Merge["Merge messages into local cache /data/discord-messages.json"]:::step
+    Merge --> IngestNodes["Ingest Message & Person nodes into HydraDB"]:::database
+    
+    subgraph Ingest Relations
+        R1[("Message -- surfaced_in --> Channel")]
+        R2[("Person -- proposed --> Message")]
+    end
+    
+    IngestNodes --> R1 & R2
+    R1 & R2 --> TriggerExtract["Trigger API POST /api/extract"]:::step
+    TriggerExtract --> End(["Messages Synced & Awaiting Extraction"]):::start_end
+```
+
 | Step | What happens |
 |---|---|
 | **Bot Token** | Used in `Authorization: Bot <token>` on all Discord API calls. The bot must have the `MESSAGE_CONTENT` privileged intent enabled in the Discord Developer Portal. |
@@ -522,6 +738,43 @@ Gemini returns structured JSON
 UI renders answer card
 + Graph highlights relevantNodeIds
 + Timeline surfaces matching decision events
+```
+
+### Graph-Native Search & Synthesis Flow (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef process fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px;
+    classDef storage fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px;
+    classDef gemini fill:#ECFDF5,stroke:#10B981,stroke-width:1.5px;
+    
+    Query["User Query (e.g., 'Why did we choose PostgreSQL?')"] --> API["POST /api/search"]:::process
+    API --> GetRelations[Fetch All Tenant Graph Relations from HydraDB]:::storage
+    GetRelations --> Subgraph[5-Pass Project Subgraph Filtering]:::process
+    
+    subgraph Subgraph Filter Pipeline
+        P1["Pass 1: Retrieve Project and Decision nodes matching project ID"]
+        P2["Pass 2: Find Channels linked to Project via has_source"]
+        P3["Pass 3: Find Messages surfaced_in those Channels"]
+        P4["Pass 4: Find Persons who proposed Decisions or Messages"]
+        P5["Pass 5: Connect remaining Messages back to Decisions via surfaced_in"]
+    end
+    
+    Subgraph --> P1 --> P2 --> P3 --> P4 --> P5
+    P5 --> Serialize[Serialize filtered Subgraph as JSON facts]:::process
+    Serialize --> Prompt[Construct Prompt injecting facts + query]:::process
+    Prompt --> GeminiCall[Gemini 2.5 Flash LLM synthesis]:::gemini
+    GeminiCall --> JSON[Parse Structured JSON Response]:::process
+    
+    subgraph Response Schema
+        O1["hasResult: boolean"]
+        O2["answer: string markdown"]
+        O3["relevantNodeIds: string array"]
+        O4["details: currentDecision, history, reasoning, confidence..."]
+    end
+    
+    JSON --> O1 & O2 & O3 & O4
+    O1 & O2 & O3 & O4 --> RenderUI["Render Answer Card + Highlight Graph Nodes in React Flow"]:::process
 ```
 
 ### How Graph Relationships Improve Search
@@ -628,6 +881,33 @@ Client renders chronological feed with event icons,
 author avatars, decision details, Discord message previews
 ```
 
+### Timeline Reconstruction Flowchart (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef steps fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px;
+    classDef db fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px;
+    
+    Start(["Request: GET /api/timeline"]) --> Fetch[Fetch Subgraph Relations from HydraDB]:::db
+    Fetch --> GroupDecisions[Group Decision node versions by logical ID]:::steps
+    GroupDecisions --> SortDecisions[Sort versions chronologically]:::steps
+    
+    SortDecisions --> GenDecEvents[Generate Decision Events]:::steps
+    subgraph Decision Event Types
+        E1["first version: decision-created"]
+        E2["revisions: decision-updated"]
+        E3["supersession: decision-superseded"]
+    end
+    GenDecEvents --> E1 & E2 & E3
+    
+    Fetch --> GetMsgs[Collect Message nodes]:::steps
+    GetMsgs --> GenMsgEvents[Generate message-imported events]:::steps
+    
+    E1 & E2 & E3 & GenMsgEvents --> MergeEvents["Merge all events & sort by timestamp ASC"]:::steps
+    MergeEvents --> Return[Return timeline events JSON]:::steps
+    Return --> RenderUI[Render chronological interactive feed in UI]
+```
+
 **Timeline Event Types:**
 
 | Event Type | Trigger | Shows |
@@ -692,6 +972,45 @@ Return { metrics, summaries } to client
 Dashboard renders metric cards + AI summaries + charts
 ```
 
+### Insights Compilation Pipeline (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef steps fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px;
+    classDef gemini fill:#ECFDF5,stroke:#10B981,stroke-width:1.5px;
+    classDef db fill:#FAF5FF,stroke:#A855F7,stroke-width:1.5px;
+    
+    Start(["Request: GET /api/insights"]) --> Fetch[Fetch Subgraph Relations]:::db
+    Fetch --> Group[Group decision versions by logical ID]:::steps
+    
+    Group --> Compute[Compute Metrics]:::steps
+    subgraph Computed Metrics
+        M1[Total, Active, Superseded, Reverted counts]
+        M2["Contributors count & active breakdown"]
+        M3[Avg confidence, revisions count, revision gaps]
+        M4[Top topic, contributor, longest active decision]
+    end
+    Compute --> M1 & M2 & M3 & M4
+    
+    M1 & M2 & M3 & M4 --> CheckGemini{"Is GEMINI_API_KEY set & totalDecisions > 0?"}:::steps
+    
+    CheckGemini -- No --> ReturnOnlyMetrics[Return only computed metrics]:::steps
+    CheckGemini -- Yes --> CallGemini[Post metrics to Gemini 2.5 Flash]:::gemini
+    
+    CallGemini --> GenSummaries[Generate 4 Narrative Summaries]:::gemini
+    subgraph AI Narratives
+        S1["mostDiscussed: Top category insights"]
+        S2["mostRevised: Evolving decision stories"]
+        S3["topContributor: Active author summaries"]
+        S4["overallHealth: Holistic project health observations"]
+    end
+    GenSummaries --> S1 & S2 & S3 & S4
+    
+    S1 & S2 & S3 & S4 --> ReturnAll[Return metrics and narrative summaries]:::steps
+    ReturnOnlyMetrics --> ReturnAll
+    ReturnAll --> Render[Render dashboard cards, charts, and AI summaries]
+```
+
 ### Computed vs. AI-Generated Values
 
 | Value | Source |
@@ -749,6 +1068,29 @@ All project sub-pages require an authenticated session
        v
 Sign out via top-bar
 Firebase signOut() --> AuthContext clears --> redirect to /
+```
+
+### Authentication Flowchart (Mermaid)
+
+```mermaid
+flowchart TD
+    classDef steps fill:#EFF6FF,stroke:#3B82F6,stroke-width:1.5px;
+    classDef ext fill:#F59E0B,stroke:#78350F,stroke-width:1.5px;
+
+     Start(["User visits /"]) --> Click["Click 'Sign In with Google'"]:::steps
+    Click --> Popup[Trigger Firebase Auth Google Sign-In Popup]:::ext
+    Popup --> Success{"Authentication Successful?"}
+    Success -- No/Cancel --> Remain[Stay on Landing Page]:::steps
+    Success -- Yes --> Token["Return Auth Credentials & User Info"]:::ext
+    Token --> SetContext[Update AuthContext state]:::steps
+    SetContext --> LocalStorage[Persist credentials in localStorage]:::steps
+    LocalStorage --> Redirect["Redirect to /dashboard"]:::steps
+    
+    %% Sign out flow
+    Redirect --> Access["Access Dashboard & Sub-pages"]:::steps
+    Access --> SignOut[Click Sign Out in Topbar]:::steps
+    SignOut --> Clear["Clear AuthContext & LocalStorage"]:::steps
+    Clear --> RedirectHome["Redirect to Landing Page /"]:::steps
 ```
 
 Firebase persists the session in `localStorage` by default. The `AuthContext`
