@@ -57,11 +57,11 @@ Provenance solves these problems by treating decisions as **first-class temporal
 
 ---
 
-<div align="center">
-  <p><strong>App Atmospheric Background Preview:</strong></p>
-  <video src="cherry.mp4" width="100%" style="max-width: 800px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);" controls muted autoplay loop></video>
-</div>
-<br />
+###  Project Links
+
+-  **[Live Demo Website](https://prova-9zmp.vercel.app/)** 
+-  **[Google Drive Walkthrough Video](https://drive.google.com/drive/folders/1TcWYSaRdkRTnYJ0tjvvEDO_ZhrPtgFeQ)** 
+
 
 ---
 
@@ -105,7 +105,7 @@ Provenance solves these problems by treating decisions as **first-class temporal
                        Timeline     Insights       Search
 ```
 
-### Architecture Flowchart (Mermaid)
+### Architecture Flowchart 
 
 ```mermaid
 graph TD
@@ -233,7 +233,7 @@ User visits landing page
   +------------------------------------------+
 ```
 
-### Workflow Sequence Diagram (Mermaid)
+### Workflow Sequence Diagram
 
 ```mermaid
 sequenceDiagram
@@ -351,7 +351,7 @@ Classification:
          - Decision  --> surfaced_in --> Message
 ```
 
-### Extraction Pipeline Flowchart (Mermaid)
+### Extraction Pipeline Flowchart 
 
 ```mermaid
 flowchart TD
@@ -582,7 +582,7 @@ Decision B  (status: active)
 Decision C  (status: active)  <-- current version
 ```
 
-### Graph Versioning & Supersession Chain (Mermaid)
+### Graph Versioning & Supersession Chain
 
 ```mermaid
 flowchart LR
@@ -666,7 +666,7 @@ Discord Server  (guild)
   Dashboard decision count updates
 ```
 
-### Ingestion Flowchart (Mermaid)
+### Ingestion Flowchart 
 
 ```mermaid
 flowchart TD
@@ -748,7 +748,7 @@ UI renders answer card
 + Timeline surfaces matching decision events
 ```
 
-### Graph-Native Search & Synthesis Flow (Mermaid)
+### Graph-Native Search & Synthesis Flow 
 
 ```mermaid
 flowchart TD
@@ -889,7 +889,7 @@ Client renders chronological feed with event icons,
 author avatars, decision details, Discord message previews
 ```
 
-### Timeline Reconstruction Flowchart (Mermaid)
+### Timeline Reconstruction Flowchart 
 
 ```mermaid
 flowchart TD
@@ -980,7 +980,7 @@ Return { metrics, summaries } to client
 Dashboard renders metric cards + AI summaries + charts
 ```
 
-### Insights Compilation Pipeline (Mermaid)
+### Insights Compilation Pipeline 
 
 ```mermaid
 flowchart TD
@@ -1078,7 +1078,7 @@ Sign out via top-bar
 Firebase signOut() --> AuthContext clears --> redirect to /
 ```
 
-### Authentication Flowchart (Mermaid)
+### Authentication Flowchart 
 
 ```mermaid
 flowchart TD
@@ -1581,7 +1581,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Screenshots
 
-> Screenshots will be added after deployment. The sections below describe what each view contains.
+<img src="banner.png" alt="Provenance Banner" width="100%" style="max-width: 800px; border-radius: 16px;" />
 
 ### Landing Page
 
@@ -1644,6 +1644,6 @@ The following features are **planned but not yet implemented.**
 ---
 
 <div align="center">
-Built with care by the Provenance team
-Powered by HydraDB x Gemini x Firebase x Next.js
+Built with care by Sylvia
+Powered by HydraDB 
 </div>
