@@ -81,3 +81,15 @@ export interface Insight {
   value: string | number
   trend?: 'up' | 'down' | 'neutral'
 }
+
+export interface DiscordMessage {
+  id: string
+  author: {
+    id: string
+    username: string
+    avatar?: string
+  }
+  content: string
+  timestamp: string
+  channelId: string
+}

@@ -22,7 +22,7 @@ export function DecisionCard({ decision, projectId }: DecisionCardProps) {
   }
 
   return (
-    <div className="bg-card border border-border rounded-lg p-6 hover:border-primary/50 transition-all">
+    <div className="bg-card border-2 border-foreground rounded-lg p-6 shadow-[4px_4px_0px_0px_var(--primary)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_var(--primary)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
       <div className="flex justify-between items-start mb-4">
         <div className="flex-1">
           <h3 className="text-lg font-bold hover:text-primary transition-colors">{decision.title}</h3>

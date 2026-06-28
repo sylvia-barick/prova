@@ -1,32 +1,63 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { signInWithPopup } from 'firebase/auth'
+import { auth, googleProvider } from '@/lib/firebase'
+import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
+import DemoRunner from '@/components/demo/DemoRunner'
 
 export default function Home() {
+  const { user, isLoading, signOut } = useAuth()
+  const router = useRouter()
+  const [demoOpen, setDemoOpen] = useState(false)
+  const [isSigningIn, setIsSigningIn] = useState(false)
+
+  const handleSignIn = async () => {
+    setIsSigningIn(true)
+    try {
+      await signInWithPopup(auth, googleProvider)
+      router.push('/dashboard')
+    } catch (err) {
+      console.error('Sign-in error:', err)
+    } finally {
+      setIsSigningIn(false)
+    }
+  }
+
+  const handleDemoClick = async () => {
+    if (!user) {
+      // Sign in first, then open demo
+      setIsSigningIn(true)
+      try {
+        await signInWithPopup(auth, googleProvider)
+        setDemoOpen(true)
+      } catch (err) {
+        console.error('Sign-in error:', err)
+      } finally {
+        setIsSigningIn(false)
+      }
+    } else {
+      setDemoOpen(true)
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Fixed Video Background */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-        >
-          <source src="/cherry-blossoms.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-background/98 via-background/90 to-background/85" />
-      </div>
+    <div className="min-h-screen bg-transparent text-foreground">
+      {/* Demo overlay */}
+      {demoOpen && <DemoRunner onClose={() => setDemoOpen(false)} />}
 
       {/* Navigation */}
       <nav className="relative z-10 flex items-center justify-between px-6 py-4 md:px-8">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground font-bold">
-            P
-          </div>
-          <span className="text-lg font-bold">Provenance</span>
+          <img
+            src="/logo_cherry.png"
+            alt="Provenance Logo"
+            className="w-8 h-8 rounded-full object-cover"
+          />
+          <span className="text-xl font-bold font-magilio text-primary tracking-wider">Provenance</span>
         </div>
         <div className="flex items-center gap-4">
           <a href="#features" className="text-sm hover:text-primary transition-colors">
@@ -35,34 +66,81 @@ export default function Home() {
           <a href="#how-it-works" className="text-sm hover:text-primary transition-colors">
             How It Works
           </a>
-          <Link href="/dashboard">
-            <Button variant="outline" size="sm">
-              Sign In
-            </Button>
-          </Link>
+          {!isLoading && (
+            user ? (
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard">
+                  <Button variant="outline" size="sm">Dashboard</Button>
+                </Link>
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName || 'User'}
+                    referrerPolicy="no-referrer"
+                    className="w-8 h-8 rounded-full object-cover border border-border"
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-xs font-bold">
+                    {user.displayName?.[0] ?? '?'}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+              >
+                {isSigningIn ? 'Signing in…' : 'Sign In'}
+              </Button>
+            )
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
       <section className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 text-center">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h1 className="text-5xl md:text-7xl font-bold text-balance">
-            Track Every Decision Your Team Makes
+          <h1 className="text-5xl md:text-7xl font-bold text-balance font-magilio tracking-wide text-white leading-tight">
+            Track Every <span className="text-primary">Decision</span> Your Team Makes
           </h1>
-          <p className="text-xl md:text-2xl text-muted-foreground text-balance">
+          <p className="text-xl md:text-2xl text-zinc-200 text-balance font-medium drop-shadow-md">
             Visualize, understand, and learn from team decisions using graph-first temporal memory.
             Never lose context again.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-            <Link href="/dashboard">
-              <Button size="lg" className="rounded-lg h-12 px-8">
-                Try Demo
-              </Button>
-            </Link>
-            <Button size="lg" variant="outline" className="rounded-lg h-12 px-8">
-              Learn More
+            <Button
+              size="lg"
+              className="rounded-lg h-12 px-8 font-bold text-base shadow-[4px_4px_0px_0px_rgba(0,0,0,0.4)] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,0.4)] transition-all"
+              onClick={handleDemoClick}
+              disabled={isSigningIn}
+            >
+              {isSigningIn ? '…' : '▶ Run Demo'}
             </Button>
+            {user ? (
+              <Link href="/dashboard">
+                <Button size="lg" variant="outline" className="rounded-lg h-12 px-8">
+                  Open Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-lg h-12 px-8"
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+              >
+                Sign In with Google
+              </Button>
+            )}
           </div>
+
+          {/* Demo caption */}
+          <p className="text-xs text-zinc-400 pt-2">
+            Uses your live Discord data · Powered by Gemini AI · Runs in under 90 s
+          </p>
         </div>
 
         {/* Scroll indicator */}
@@ -76,7 +154,9 @@ export default function Home() {
       {/* Features Section */}
       <section id="features" className="relative z-10 py-24 px-4 md:px-8">
         <div className="max-w-6xl mx-auto">
-          <h2 className="text-4xl font-bold text-center mb-16">Why Provenance?</h2>
+          <h2 className="text-4xl font-bold text-center mb-16 font-magilio tracking-wide">
+            Why <span className="text-primary">Provenance</span>?
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -93,7 +173,7 @@ export default function Home() {
               },
               {
                 title: 'Team Insights',
-                description: 'Analyze decision velocity, reversals, and impact. Understand your team&apos;s decision-making patterns.',
+                description: 'Analyze decision velocity, reversals, and impact. Understand your team\'s decision-making patterns.',
               },
               {
                 title: 'Visual Graph',
@@ -106,10 +186,10 @@ export default function Home() {
             ].map((feature, i) => (
               <div
                 key={i}
-                className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-lg p-6 hover:bg-card/70 transition-colors"
+                className="bg-black/50 backdrop-blur-sm border-2 border-foreground rounded-xl p-6 transition-all duration-200 shadow-[4px_4px_0px_0px_var(--primary)] hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_0px_var(--primary)]"
               >
-                <h3 className="text-lg font-bold mb-2">{feature.title}</h3>
-                <p className="text-muted-foreground text-sm">{feature.description}</p>
+                <h3 className="text-xl font-bold mb-3 text-white">{feature.title}</h3>
+                <p className="text-zinc-200 text-sm leading-relaxed">{feature.description}</p>
               </div>
             ))}
           </div>
@@ -166,11 +246,33 @@ export default function Home() {
           <p className="text-lg text-muted-foreground">
             Join teams using Provenance to make better decisions through shared understanding.
           </p>
-          <Link href="/dashboard">
-            <Button size="lg" className="rounded-lg h-12 px-8">
-              Try Demo Now
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              className="rounded-lg h-12 px-8 font-bold"
+              onClick={handleDemoClick}
+              disabled={isSigningIn}
+            >
+              {isSigningIn ? '…' : '▶ Run Demo'}
             </Button>
-          </Link>
+            {user ? (
+              <Link href="/dashboard">
+                <Button size="lg" variant="outline" className="rounded-lg h-12 px-8">
+                  Open Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                size="lg"
+                variant="outline"
+                className="rounded-lg h-12 px-8"
+                onClick={handleSignIn}
+                disabled={isSigningIn}
+              >
+                Sign In with Google
+              </Button>
+            )}
+          </div>
         </div>
       </section>
 
@@ -178,18 +280,12 @@ export default function Home() {
       <footer className="relative z-10 border-t border-border/50 py-8 px-4 md:px-8 mt-16">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div className="text-sm text-muted-foreground">
-            © 2024 Provenance. All rights reserved.
+            © 2026 Provenance. All rights reserved.
           </div>
           <div className="flex gap-6 text-sm">
-            <a href="#" className="hover:text-primary transition-colors">
-              Privacy
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Terms
-            </a>
-            <a href="#" className="hover:text-primary transition-colors">
-              Contact
-            </a>
+            <a href="#" className="hover:text-primary transition-colors">Privacy</a>
+            <a href="#" className="hover:text-primary transition-colors">Terms</a>
+            <a href="#" className="hover:text-primary transition-colors">Contact</a>
           </div>
         </div>
       </footer>

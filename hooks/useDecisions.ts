@@ -1,6 +1,22 @@
 import { useProject } from '@/context/ProjectContext'
 import { Decision } from '@/lib/types'
 
+export function useDecisions(projectId: string): {
+  decisions: Decision[]
+  getDecision: (id: string) => Decision | undefined
+  getActiveDecisions: () => Decision[]
+  getSuperseededDecisions: () => Decision[]
+  getRevertedDecisions: () => Decision[]
+  searchDecisions: (query: string) => Decision[]
+}
+export function useDecisions(): {
+  decisions: Decision[]
+  getDecision: (id: string) => Decision | undefined
+  getActiveDecisions: (id: string) => Decision[]
+  getSuperseededDecisions: (id: string) => Decision[]
+  getRevertedDecisions: (id: string) => Decision[]
+  searchDecisions: (query: string, id: string) => Decision[]
+}
 export function useDecisions(projectId?: string) {
   const { decisions, getProjectDecisions } = useProject()
 

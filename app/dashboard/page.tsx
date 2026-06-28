@@ -6,14 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ProjectCard } from '@/components/dashboard/project-card'
 
 export default function DashboardPage() {
-  const { projects, setCurrentProject } = useProject()
-
-  const handleSelectProject = (projectId: string) => {
-    const project = projects.find((p) => p.id === projectId)
-    if (project) {
-      setCurrentProject(project)
-    }
-  }
+  const { projects, isLoading } = useProject()
 
   return (
     <div className="p-8">
@@ -27,22 +20,34 @@ export default function DashboardPage() {
           <Button>Create Project</Button>
         </div>
 
-        {/* Projects Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <div key={project.id} onClick={() => handleSelectProject(project.id)}>
-              <Link href={`/dashboard/projects/${project.id}`}>
-                <ProjectCard project={project} />
-              </Link>
-            </div>
-          ))}
-        </div>
-
-        {projects.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-muted-foreground text-lg mb-4">No projects yet</p>
-            <Button>Create Your First Project</Button>
+        {isLoading ? (
+          <div className="text-center py-16 text-muted-foreground font-medium">
+            Loading projects...
           </div>
+        ) : (
+          <>
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {projects.map((project) => (
+                // Single Link — no wrapping div with onClick.
+                // setCurrentProject is handled by the project [id]/layout.tsx
+                // which runs useEffect when the route mounts.
+                <Link
+                  key={project.id}
+                  href={`/dashboard/projects/${project.id}`}
+                >
+                  <ProjectCard project={project} />
+                </Link>
+              ))}
+            </div>
+
+            {projects.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-muted-foreground text-lg mb-4">No projects yet</p>
+                <Button>Create Your First Project</Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
