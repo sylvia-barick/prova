@@ -1581,7 +1581,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## Screenshots
 
-<img src="banner.png" alt="Provenance Banner" width="100%" style="max-width: 800px; border-radius: 16px;" />
+<img src="banner2.png" alt="Provenance Banner" width="100%" style="max-width: 800px; border-radius: 16px;" />
 
 ### Landing Page
 
