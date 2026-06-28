@@ -302,6 +302,11 @@ sequenceDiagram
 
 ---
 
+
+<img src="banner2.png" alt="Provenance Banner" width="100%" style="max-width: 800px; border-radius: 16px;" />
+
+---
+
 ## AI Decision Extraction Pipeline
 
 ### Pipeline Diagram
